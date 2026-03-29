@@ -84,7 +84,19 @@ export const AuthProvider = ({ children }) => {
 
         if (response.ok) {
             localStorage.setItem("token", data.token);
-            setUser(data.user);
+
+            const user_response = await fetch(`${VITE_BACKEND_URL}/user/me`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${data.token}`,
+                },
+            });
+            const user_data = await user_response.json();
+
+            console.log(user_data.user);
+
+            setUser(user_data.user);
             navigate("/profile");
         } else {
             return data.message;
@@ -94,7 +106,7 @@ export const AuthProvider = ({ children }) => {
     /**
      * Registers a new user.
      *
-     * @remarks Upon success, navigates to "/".
+     * @remarks Upon success, navigates to "/success".
      * @param {Object} userData - The data of the user to register.
      * @returns {string} - Upon failure, returns an error message.
      */
@@ -109,7 +121,7 @@ export const AuthProvider = ({ children }) => {
         const data = await response.json();
 
         if (response.ok) {
-            navigate("/");
+            navigate("/success");
         } else {
             return data.message;
         }

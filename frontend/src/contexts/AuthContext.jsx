@@ -73,33 +73,22 @@ export const AuthProvider = ({ children }) => {
      * @returns {string} - Upon failure, Returns an error message.
      */
     const login = async (username, password) => {
-        // Send a request to the backend to log in the user
-        fetch(`${VITE_BACKEND_URL}/login`, {
+        const response = await fetch(`${VITE_BACKEND_URL}/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ username, password }),
-        })
-            // Error handling
-            .then((response) => {
-                if (response.ok) {
-                    return response.json();
-                } else {
-                    return response.message;
-                }
-            })
-            // Login the user
-            .then((data) => {
-                if (data.hasOwnProperty("token")) {
-                    localStorage.setItem("token", data.token);
-                    setUser(data.user);
+        });
+        const data = await response.json();
 
-                    navigate("/profile");
-                } else {
-                    return data;
-                }
-            });
+        if (response.ok) {
+            localStorage.setItem("token", data.token);
+            setUser(data.user);
+            navigate("/profile");
+        } else {
+            return data.message;
+        }
     };
 
     /**
@@ -110,21 +99,20 @@ export const AuthProvider = ({ children }) => {
      * @returns {string} - Upon failure, returns an error message.
      */
     const register = async (userData) => {
-        fetch(`${VITE_BACKEND_URL}/register`, {
+        const response = await fetch(`${VITE_BACKEND_URL}/register`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(userData),
-        })
-            // Error handling
-            .then((response) => {
-                if (response.ok) {
-                    navigate("/");
-                } else {
-                    return response.message;
-                }
-            });
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            navigate("/");
+        } else {
+            return data.message;
+        }
     };
 
     return (

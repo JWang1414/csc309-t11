@@ -11,12 +11,13 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3000";
 const app = express();
 
 const allowedOrigins = [FRONTEND_URL, BACKEND_URL];
+
 const corsOptions = {
     origin: function (origin, callback) {
-        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-            return callback(null, true);
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
         } else {
-            return callback(new Error("Not allowed by CORS"));
+            callback(new Error("Not allowed by CORS"));
         }
     },
     credentials: true,
@@ -26,6 +27,24 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", FRONTEND_URL);
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header(
+        "Access-Control-Allow-Methods",
+        "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+    );
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    if (req.method === "OPTIONS") {
+        // short-circuit preflight
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(express.json());
 app.use("", routes);
 
